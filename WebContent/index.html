@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf8">
+		<title>Save frame as PDF example</title>
+	
+		<script src="js/Detector.js" type="text/javascript"></script>
+		<script src="js/jspdf.min.js" type="text/javascript"></script>
+		 <script src="js/three.min.js" type="text/javascript"></script> 
+		<!-- <script src="js/Three.js"></script>   -->
+		<script src="js/PDFRenderer.js" type="text/javascript"></script>
+		<script src="js/OBJLoader.js"></script>
+		<script type="text/javascript">
+		window.onload = function () {
+
+			var element = document.getElementById('three-container');
+	 
+	        var width = 450; //450
+	        var height = 570; //570
+			var renderer = null;
+			if ( Detector.webgl ) {
+				renderer = new THREE.WebGLRenderer();
+			} else if ( Detector.canvas ) {
+				renderer = new THREE.CanvasRenderer();
+			}
+			renderer.setSize( width, height );
+
+			element.appendChild( renderer.domElement );
+
+			var camera = new THREE.PerspectiveCamera(
+				18, width / height,
+				1, 8000
+			);
+			 camera.position.z = 70;  
+
+			var scene = new THREE.Scene();
+			scene.add( camera );
+
+	/* 		var plane = new THREE.Mesh( new THREE.PlaneGeometry(120, 120), new THREE.MeshBasicMaterial({color: 0x003366}) );
+			scene.add( plane );
+
+			var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0xCC0044 });
+			var radius = 50, segments = 16, rings = 16;
+			var sphere = new THREE.Mesh( new THREE.SphereGeometry( radius, segments, rings), sphereMaterial );
+			scene.add( sphere );
+
+			var pointLight = new THREE.PointLight(0xFFFFFF);
+			pointLight.position.x = 10;
+			pointLight.position.y = 50;
+			pointLight.position.z = 130;
+			scene.add(pointLight);
+
+			var torus = new THREE.Mesh( new THREE.TorusKnotGeometry(60, 10, 100), new THREE.MeshLambertMaterial({ color: 0x33DDbb }) );
+			scene.add( torus ); */
+		
+
+			  var loader = new THREE.OBJLoader();
+	        
+      	 		loader.load( "js/MaleDressed.obj", function ( object ) {
+               /*  object.children[0].geometry.computeFaceNormals(); */
+                var geometry = new THREE.Geometry();
+                geometry = object.children[0].geometry;
+				         
+        /*         THREE.GeometryUtils.center(geometry);
+                geometry.dynamic = true; */
+             		
+           		 var material = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture('img/texture1.png'), side: THREE.DoubleSide });
+           
+		         var skinMesh = new THREE.Mesh(geometry, material); 
+                 
+
+                 scene.add(skinMesh);
+ 
+                 
+                 
+              } );
+		/* 	var line = new THREE.Line( geometry, new THREE.LineBasicMaterial({ color: 0x993300, linewidth: 3 }) );
+			scene.add( line ); */
+
+			/* var tetra = new THREE.Mesh( new THREE.TetrahedronGeometry(10), new THREE.MeshLambertMaterial({color: 0x00FF00}) );
+			tetra.translateX(100);
+			scene.add( tetra.clone() ); */
+
+			if ( renderer instanceof THREE.PDFRenderer ) {
+				var pdf = renderer.getPDF();
+				pdf.text( 20, 30, "PDF renderer for three.js" );
+			}
+
+			/* var controls = new THREE.OrbitControls( camera, element ); */
+
+			var loop = function () {			
+				renderer.render( scene, camera );
+				requestAnimationFrame( loop );
+			}
+			loop();
+
+			var pdfElement = document.getElementById('three-pdf-frame');
+			var button = document.createElement('button');
+			button.innerHTML = 'Save frame';
+			button.onclick = function (event) {
+				event.preventDefault();
+				var pdfRenderer = new THREE.PDFRenderer();
+				pdfRenderer.setSize( width, height );
+				pdfElement.innerHTML = '';
+				pdfElement.appendChild(pdfRenderer.domElement);
+				pdfRenderer.render(scene, camera);
+				return false;
+			}
+			document.body.appendChild(button);
+		}
+		</script>
+	</head>
+	<body>
+		<div id="three-container" ></div>
+		<div id="three-pdf-frame" >If your browser does not support inline PDF display it will generate a download from it ... so watch your downloads queue and folder.</div>
+	</body>
+</html>
